@@ -10,10 +10,6 @@ import (
 
 var errs []error
 
-type VisitorFunc func(n ast.Node) ast.Visitor
-
-func (f VisitorFunc) Visit(n ast.Node) ast.Visitor { return f(n) }
-
 type Visitor struct {
 	f *ast.File
 }
@@ -23,17 +19,17 @@ func (v *Visitor) Run(f ast.Node) []error {
 
 	v.f = f.(*ast.File)
 
-	ast.Walk(VisitorFunc(v.walker), f)
+	ast.Walk(v, f)
 
 	return errs
 }
 
-func (v Visitor) walker(n ast.Node) ast.Visitor {
+func (v *Visitor) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.GoStmt:
 		v.detectScope(n)
 	default:
-		return VisitorFunc(v.walker)
+		return v
 	}
 
 	return nil
