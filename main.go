@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 
 	"github.com/gelidus/nogo/utils"
 	"github.com/gelidus/nogo/visitors/example"
@@ -56,14 +57,17 @@ func main() {
 		if info.IsDir() {
 			log.Debug("Executing on folder: ", fileName)
 
-			pkgs, err := parser.ParseDir(fset, fileName, nil, parser.ParseComments)
-			if err != nil {
-				return err
-			}
+			filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
+				if info.IsDir() != true {
+					f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
+					if err != nil {
+						return err
+					}
 
-			for name, node := range pkgs {
-				astFileMap[name] = node
-			}
+					astFileMap[path] = f
+				}
+				return nil
+			})
 		} else {
 			log.Debug("Executing on file: ", fileName)
 
