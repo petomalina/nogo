@@ -4,7 +4,6 @@ import (
 	"errors"
 	"go/ast"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/tools/go/ast/astutil"
 )
 
@@ -16,8 +15,6 @@ type Walker struct {
 }
 
 func (v *Visitor) Run(f ast.Node) []error {
-	log.Debug("Running go-call antipattern visitor")
-
 	walker := &Walker{
 		errs: []error{},
 		f:    f.(*ast.File),

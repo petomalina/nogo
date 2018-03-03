@@ -3,15 +3,11 @@ package example
 import (
 	"errors"
 	"go/ast"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Visitor struct{}
 
 func (v *Visitor) Run(f ast.Node) []error {
-	log.Debug("Running example pattern visitor")
-
 	walker := &Walker{
 		errs: []error{},
 	}
