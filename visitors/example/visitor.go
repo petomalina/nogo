@@ -16,12 +16,20 @@ type Visitor struct{}
 func (v *Visitor) Run(f ast.Node) []error {
 	log.Debug("Running example pattern visitor")
 
-	ast.Walk(v, f)
+	walker := &Walker{
+		errs: []error{},
+	}
 
-	return errs
+	ast.Walk(walker, f)
+
+	return walker.errs
 }
 
-func (v *Visitor) Visit(n ast.Node) ast.Visitor {
+type Walker struct {
+	errs []error
+}
+
+func (v *Walker) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.FuncDecl:
 		if n.Name.Name == "main" {
