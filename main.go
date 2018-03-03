@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
@@ -41,23 +42,48 @@ func main() {
 
 		// filename to parse
 		fileName := c.Args()[0]
-		log.Debug("Executing on file: ", fileName)
-
-		fset := token.NewFileSet()
-
-		f, err := parser.ParseFile(fset, fileName, nil, parser.ParseComments)
-		if err != nil {
+		info, err := os.Stat(fileName)
+		if os.IsNotExist(err) {
 			return err
 		}
-		log.Debug("File parsing successful: ", fileName)
+
+		// fset for parse functions
+		fset := token.NewFileSet()
+		astFileMap := map[string]ast.Node{}
+
+		if info.IsDir() {
+			log.Debug("Executing on folder: ", fileName)
+
+			pkgs, err := parser.ParseDir(fset, fileName, nil, parser.ParseComments)
+			if err != nil {
+				return err
+			}
+
+			for name, node := range pkgs {
+				astFileMap[name] = node
+			}
+		} else {
+			log.Debug("Executing on file: ", fileName)
+
+			f, err := parser.ParseFile(fset, fileName, nil, parser.ParseComments)
+			if err != nil {
+				return err
+			}
+
+			astFileMap[fileName] = f
+		}
+
+		log.Debug("Parse successful for target: ", fileName)
 
 		patterns := c.GlobalStringSlice("pattern")
-		for _, name := range patterns {
-			log.Info("Running visitor for pattern: ", name)
+		for fileName, ast := range astFileMap {
+			for _, name := range patterns {
+				log.Info("Running visitor: ", name, " for file: ", fileName)
 
-			errs := visitors[name].Run(f)
-			if errs != nil && len(errs) > 0 {
-				log.Warn("Errors were reported by the visitor: ", errs)
+				errs := visitors[name].Run(ast)
+				if errs != nil && len(errs) > 0 {
+					log.Warn("Errors were reported by the visitor: ", errs)
+				}
 			}
 		}
 

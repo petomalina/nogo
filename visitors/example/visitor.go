@@ -4,6 +4,8 @@ import (
 	"errors"
 	"go/ast"
 
+	"github.com/gelidus/nogo/utils"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,17 +13,12 @@ var (
 	errs = []error{}
 )
 
-type VisitorFunc func(n ast.Node) ast.Visitor
+type Visitor struct{}
 
-func (f VisitorFunc) Visit(n ast.Node) ast.Visitor { return f(n) }
-
-type Visitor struct {
-}
-
-func (v *Visitor) Run(f *ast.File) []error {
+func (v *Visitor) Run(f ast.Node) []error {
 	log.Debug("Running example pattern visitor")
 
-	ast.Walk(VisitorFunc(walker), f)
+	ast.Walk(utils.VisitorFunc(walker), f)
 
 	return errs
 }
@@ -33,7 +30,7 @@ func walker(n ast.Node) ast.Visitor {
 			errs = append(errs, errors.New("Found too many mains (at least one)"))
 		}
 	default:
-		return VisitorFunc(walker)
+		return utils.VisitorFunc(walker)
 	}
 
 	return nil
