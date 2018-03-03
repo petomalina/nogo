@@ -23,7 +23,7 @@ func (v *Visitor) Run(f ast.Node) []error {
 		f:    f.(*ast.File),
 	}
 
-	ast.Walk(v, f)
+	ast.Walk(walker, f)
 
 	return walker.errs
 }
@@ -32,12 +32,12 @@ func (v *Visitor) Name() string {
 	return "go"
 }
 
-func (v *Visitor) Visit(n ast.Node) ast.Visitor {
+func (w *Walker) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.GoStmt:
 		w.detectScope(n)
 	default:
-		return v
+		return w
 	}
 
 	return nil
