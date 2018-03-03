@@ -59,7 +59,7 @@ func main() {
 			log.Debug("Executing on folder: ", fileName)
 
 			filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
-				if info.IsDir() != true && strings.HasSuffix(d.Name(), ".go") {
+				if info.IsDir() != true && strings.HasSuffix(info.Name(), ".go") {
 					f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
 					if err != nil {
 						return err
