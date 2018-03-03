@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
@@ -52,19 +51,22 @@ func main() {
 		}
 
 		// fset for parse functions
-		fset := token.NewFileSet()
-		astFileMap := map[string]ast.Node{}
+		astFileMap := map[string]utils.SourceFile{}
 
 		if info.IsDir() {
 			log.Debug("Executing on folder: ", fileName)
 
 			err := filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
 				if info.IsDir() != true && strings.HasSuffix(info.Name(), ".go") {
+					fset := token.NewFileSet()
 					f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
 					if err != nil {
 						return err
 					}
-					astFileMap[path] = f
+					astFileMap[path] = utils.SourceFile{
+						Node: f,
+						Fset: fset,
+					}
 				}
 				return nil
 			})
@@ -75,12 +77,16 @@ func main() {
 		} else {
 			log.Debug("Executing on file: ", fileName)
 
+			fset := token.NewFileSet()
 			f, err := parser.ParseFile(fset, fileName, nil, parser.ParseComments)
 			if err != nil {
 				return err
 			}
 
-			astFileMap[fileName] = f
+			astFileMap[fileName] = utils.SourceFile{
+				Node: f,
+				Fset: fset,
+			}
 		}
 
 		log.Debug("Parse successful for target: ", fileName)
@@ -94,7 +100,12 @@ func main() {
 		errs := utils.RunVisitorsInParallel(astFileMap, vs)
 
 		if len(errs) > 0 {
-			log.Warn("Errors were reported by the visitor: ", errs)
+			log.Warn("Errors were reported by the visitor: ")
+			for _, vs := range errs {
+				for _, visitor := range vs {
+					log.Warn(visitor[0])
+				}
+			}
 		} else {
 			log.Info("No errors found #shipit")
 		}
