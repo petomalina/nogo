@@ -3,11 +3,12 @@ package pointers
 import (
 	"errors"
 	"go/ast"
+	"go/token"
 )
 
 type Visitor struct{}
 
-func (v *Visitor) Run(f ast.Node) []error {
+func (v *Visitor) Run(f ast.Node, _ *token.FileSet) []error {
 	walker := &Walker{
 		errs: []error{},
 	}
