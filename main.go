@@ -78,14 +78,12 @@ func main() {
 		log.Debug("Parse successful for target: ", fileName)
 
 		patterns := c.GlobalStringSlice("pattern")
-		for fileName, ast := range astFileMap {
-			for _, name := range patterns {
-				log.Info("Running visitor: ", name, " for file: ", fileName)
+		for _, v := range patterns {
+			log.Info("Running visitor: ", v)
+			errs := utils.RunInParallel(astFileMap, visitors[v])
 
-				errs := visitors[name].Run(ast)
-				if errs != nil && len(errs) > 0 {
-					log.Warn("Errors were reported by the visitor: ", errs)
-				}
+			if len(errs) > 0 {
+				log.Warn("Errors were reported by the visitor: ", errs)
 			}
 		}
 
