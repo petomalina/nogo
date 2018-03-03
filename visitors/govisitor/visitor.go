@@ -24,6 +24,10 @@ func (v *Visitor) Run(f ast.Node) []error {
 	return errs
 }
 
+func (v *Visitor) Name() string {
+	return "go"
+}
+
 func (v *Visitor) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.GoStmt:

@@ -21,6 +21,10 @@ func (v *Visitor) Run(f ast.Node) []error {
 	return walker.errs
 }
 
+func (v *Visitor) Name() string {
+	return "example"
+}
+
 type Walker struct {
 	errs []error
 }
