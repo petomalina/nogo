@@ -91,6 +91,8 @@ func main() {
 
 		if len(errs) > 0 {
 			log.Warn("Errors were reported by the visitor: ", errs)
+		} else {
+			log.Info("No errors found #shipit")
 		}
 
 		return nil
