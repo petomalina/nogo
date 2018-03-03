@@ -12,6 +12,7 @@ import (
 	"github.com/gelidus/nogo/utils"
 	"github.com/gelidus/nogo/visitors/example"
 	"github.com/gelidus/nogo/visitors/govisitor"
+	"github.com/gelidus/nogo/visitors/pointers"
 
 	log "github.com/sirupsen/logrus"
 
@@ -20,8 +21,9 @@ import (
 
 var (
 	visitors = map[string]utils.Visitor{
-		"example": &example.Visitor{},
-		"go":      &govisitor.Visitor{},
+		"example":  &example.Visitor{},
+		"go":       &govisitor.Visitor{},
+		"pointers": &pointers.Visitor{},
 	}
 )
 
