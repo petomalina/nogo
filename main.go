@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gelidus/nogo/utils"
 	"github.com/gelidus/nogo/visitors/example"
@@ -58,12 +59,11 @@ func main() {
 			log.Debug("Executing on folder: ", fileName)
 
 			filepath.Walk(fileName, func(path string, info os.FileInfo, err error) error {
-				if info.IsDir() != true {
+				if info.IsDir() != true && strings.HasSuffix(d.Name(), ".go") {
 					f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
 					if err != nil {
 						return err
 					}
-
 					astFileMap[path] = f
 				}
 				return nil
