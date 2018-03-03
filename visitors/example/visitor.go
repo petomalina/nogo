@@ -7,10 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	errs = []error{}
-)
-
 type Visitor struct{}
 
 func (v *Visitor) Run(f ast.Node) []error {
@@ -29,14 +25,14 @@ type Walker struct {
 	errs []error
 }
 
-func (v *Walker) Visit(n ast.Node) ast.Visitor {
+func (w *Walker) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.FuncDecl:
 		if n.Name.Name == "main" {
-			errs = append(errs, errors.New("Found too many mains (at least one)"))
+			w.errs = append(w.errs, errors.New("Found too many mains (at least one)"))
 		}
 	default:
-		return v
+		return w
 	}
 
 	return nil
