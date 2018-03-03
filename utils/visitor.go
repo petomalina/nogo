@@ -16,6 +16,7 @@ func RunVisitorInParallel(asts map[string]ast.Node, v Visitor) map[string][]erro
 	results := map[string][]error{}
 
 	wg := sync.WaitGroup{}
+	l := sync.Mutex{}
 
 	for name, node := range asts {
 		wg.Add(1)
@@ -23,7 +24,9 @@ func RunVisitorInParallel(asts map[string]ast.Node, v Visitor) map[string][]erro
 			log.Debug("Running visitor: '", v.Name(), "' on: '", name, "'")
 			errs := v.Run(node)
 			if len(errs) > 0 {
+				l.Lock()
 				results[name] = errs
+				l.Unlock()
 			}
 			wg.Done()
 		}(name, node)
@@ -38,13 +41,16 @@ func RunVisitorsInParallel(asts map[string]ast.Node, vs []Visitor) map[string]ma
 	results := map[string]map[string][]error{}
 
 	wg := sync.WaitGroup{}
+	l := sync.Mutex{}
 
 	for _, v := range vs {
 		wg.Add(1)
 		go func(v Visitor) {
 			res := RunVisitorInParallel(asts, v)
 			if len(res) > 0 {
+				l.Lock()
 				results[v.Name()] = res
+				l.Unlock()
 			}
 			wg.Done()
 		}(v)
