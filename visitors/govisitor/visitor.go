@@ -2,7 +2,9 @@ package govisitor
 
 import (
 	"errors"
+	"fmt"
 	"go/ast"
+	"go/token"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -12,12 +14,14 @@ type Visitor struct{}
 type Walker struct {
 	errs []error
 	f    *ast.File
+	fset *token.FileSet
 }
 
-func (v *Visitor) Run(f ast.Node) []error {
+func (v *Visitor) Run(f ast.Node, fset *token.FileSet) []error {
 	walker := &Walker{
 		errs: []error{},
 		f:    f.(*ast.File),
+		fset: fset,
 	}
 
 	ast.Walk(walker, f)
@@ -47,7 +51,7 @@ func (w *Walker) detectScope(n ast.Node) {
 		switch x := node.(type) {
 		case *ast.FuncDecl:
 			if ast.IsExported(x.Name.Name) {
-				w.errs = append(w.errs, errors.New("go statement used in exported function"))
+				w.errs = append(w.errs, errors.New(fmt.Sprintf("%s: go statement used in exported function", w.fset.Position(x.Pos()))))
 			}
 		}
 	}
