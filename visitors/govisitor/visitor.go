@@ -8,41 +8,45 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 )
 
-var errs []error
+type Visitor struct{}
 
-type Visitor struct {
-	f *ast.File
+type Walker struct {
+	errs []error
+	f    *ast.File
 }
 
 func (v *Visitor) Run(f ast.Node) []error {
 	log.Debug("Running go-call antipattern visitor")
 
-	v.f = f.(*ast.File)
+	walker := &Walker{
+		errs: []error{},
+		f:    f.(*ast.File),
+	}
 
-	ast.Walk(v, f)
+	ast.Walk(walker, f)
 
-	return errs
+	return walker.errs
 }
 
-func (v *Visitor) Visit(n ast.Node) ast.Visitor {
+func (w *Walker) Visit(n ast.Node) ast.Visitor {
 	switch n := n.(type) {
 	case *ast.GoStmt:
-		v.detectScope(n)
+		w.detectScope(n)
 	default:
-		return v
+		return w
 	}
 
 	return nil
 }
 
-func (v Visitor) detectScope(n ast.Node) {
-	nodes, _ := astutil.PathEnclosingInterval(v.f, n.Pos(), n.End())
+func (w *Walker) detectScope(n ast.Node) {
+	nodes, _ := astutil.PathEnclosingInterval(w.f, n.Pos(), n.End())
 
 	for _, node := range nodes {
 		switch x := node.(type) {
 		case *ast.FuncDecl:
 			if ast.IsExported(x.Name.Name) {
-				errs = append(errs, errors.New("go statement used in exported function"))
+				w.errs = append(w.errs, errors.New("go statement used in exported function"))
 			}
 		}
 	}
