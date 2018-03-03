@@ -18,9 +18,10 @@ type Visitor struct {
 	f *ast.File
 }
 
-func (v *Visitor) Run(f *ast.File) []error {
+func (v *Visitor) Run(f ast.Node) []error {
 	log.Debug("Running go-call antipattern visitor")
-	v.f = f
+
+	v.f = f.(*ast.File)
 
 	ast.Walk(VisitorFunc(v.walker), f)
 
